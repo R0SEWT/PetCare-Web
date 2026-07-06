@@ -44,7 +44,7 @@ SEVERITY_BY_ID = {l["id"]: l.get("clinicalSeverity", "unknown") for l in LABELS[
 DISPLAY_ES = {l["id"]: l["display"]["es"] for l in LABELS["labels"]}
 
 MODEL = {
-    "name": "petcare-derm-classifier",  # not "yolov8" — see docs/ml/model-task-decision.md
+    "name": "petcare-derm-yolov8-cls",  # YOLOv8 classification mode — see docs/ml/model-task-decision.md
     "version": "0.0.0-mock",
     "datasetVersion": LABELS["version"],
     "calibrationVersion": URGENCY_POLICY["version"],

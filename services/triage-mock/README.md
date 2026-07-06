@@ -24,7 +24,7 @@ Health check: `GET http://localhost:8000/health`
 - Every 200 body is validated against `triage-response.schema.json` before it is
   returned — the mock cannot drift from the contract.
 - Urgency is computed from `urgency-policy.json`, never hardcoded.
-- Model name is `petcare-derm-classifier` (see `../../docs/ml/model-task-decision.md`).
+- Model name is `petcare-derm-yolov8-cls` (see `../../docs/ml/model-task-decision.md`).
 
 ## Deterministic scenarios (no randomness)
 

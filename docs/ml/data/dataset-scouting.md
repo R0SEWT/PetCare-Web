@@ -37,8 +37,40 @@ Links:
 3. **This scarcity is the project's moat.** A small, vet-verified pet-derm eval
    set is a genuinely scarce asset and the portfolio centerpiece — lean into it.
 
-## Next searches worth doing (not yet done)
+## Off-Hub candidates (real canine-derm image data) — found 2026-07-06
 
-- Kaggle / Zenodo / figshare for "canine dermatology" image sets (outside HF).
-- Google Scholar / HF Papers for veterinary derm CV papers that release data.
-- Direct outreach to a vet school for a labeled teaching set.
+Unlike HF, Roboflow and Kaggle **do** have canine skin-disease image datasets,
+YOLO-ready. These unblock a **fast first baseline** (`yolov8-cls`) while the
+vet-verified gold set is being built.
+
+| Source | What | Use |
+| --- | --- | --- |
+| [Roboflow: dog-skin-disease-dataset](https://universe.roboflow.com/dog-skin-disease-dermatosis/dog-skin-disease-dataset) | Classification: healthy, fungal, bacterial dermatosis, hypersensitivity dermatitis | strongest cls candidate |
+| [Roboflow: litespy/dog-skin-diseases](https://universe.roboflow.com/litespy-l22hu/dog-skin-diseases) | Detection, 618 imgs + pre-trained model/API | reference; detection (not our path) |
+| [Kaggle: youssefmohmmed/dogs-skin-diseases-image-dataset](https://www.kaggle.com/datasets/youssefmohmmed/dogs-skin-diseases-image-dataset) | Image dataset | training candidate |
+| [Kaggle: yashmotiani/dogs-skin-disease-dataset](https://www.kaggle.com/datasets/yashmotiani/dogs-skin-disease-dataset) | Image dataset | training candidate |
+| [Kaggle: smadive/pet-disease-images](https://www.kaggle.com/datasets/smadive/pet-disease-images) | Pet disease images | training candidate |
+| Published study ([IJSDR2507201](https://ijsdr.org/papers/IJSDR2507201.pdf)) | 4,315 imgs, 6 classes, YOLOv8, 92.38% acc | prior art / method reference |
+
+### ⚠️ Label-mapping gap (must handle before training)
+
+Their taxonomies are **not** our 5 canonical labels. Typical classes:
+Fungal Infections, Dermatitis, Demodicosis, Healthy, Hypersensitivity, Ringworm,
+bacterial dermatosis. Mapping to `schema/labels.json`:
+
+- `Ringworm` → `dermatophytosis`
+- `bacterial dermatosis` → `bacterial_pyoderma`
+- `Fungal Infections` → `fungal_malassezia` (approximate — verify)
+- `Hypersensitivity` / `Dermatitis` → `atopic_dermatitis` / `allergic_contact_dermatitis` (ambiguous — needs judgment)
+- `Healthy` → OOD/negative (`oodClass: healthy_skin`)
+- `Demodicosis` → out of scope → `unknown` or drop
+
+These are web-scraped, often noisy, and mislabeled. **Good enough for a first
+baseline, not for credible evaluation.** Eval numbers only count on the
+vet-verified gold set (`gold-eval-set.md`).
+
+## Still worth doing
+
+- Confirm license/usage terms on the chosen Roboflow/Kaggle set before committing.
+- Perceptual-hash dedup between any off-the-shelf training data and the gold set.
+- Vet-school outreach for the gold set remains the highest-value data action.
