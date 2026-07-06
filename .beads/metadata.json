@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "PetCare_Web",
+  "project_id": "5d2b736e-6ee3-460f-864e-867e307e4462"
+}
