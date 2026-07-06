@@ -2,6 +2,8 @@
 
 This is a TanStack Start + Vite React app for the PetCare demo. Use Bun for dependency and script execution because `bun.lock` is present.
 
+This repo supports both Claude and Codex. Claude-specific integration lives here and in `.mcp.json`; Codex-specific integration lives in `AGENTS.md` and `.codex/config.toml`.
+
 <!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:ca08a54f -->
 ## Beads Issue Tracker
 

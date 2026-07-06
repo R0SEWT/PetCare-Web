@@ -1,0 +1,32 @@
+# PetCare-Web project-local Codex configuration.
+# This complements Claude's `.mcp.json`; keep repo-specific Codex wiring here.
+
+[mcp_servers.context7]
+command = "npx"
+args = ["-y", "@upstash/context7-mcp"]
+startup_timeout_sec = 20
+tool_timeout_sec = 60
+
+[mcp_servers.playwright]
+command = "npx"
+args = ["@playwright/mcp@latest", "--headless", "--isolated"]
+startup_timeout_sec = 30
+tool_timeout_sec = 120
+
+[[hooks.SessionStart]]
+matcher = "startup|resume|clear|compact"
+
+[[hooks.SessionStart.hooks]]
+type = "command"
+command = "bd prime"
+timeout = 30
+statusMessage = "Loading Beads context"
+
+[[hooks.PreCompact]]
+matcher = "manual|auto"
+
+[[hooks.PreCompact.hooks]]
+type = "command"
+command = "bd prime"
+timeout = 30
+statusMessage = "Refreshing Beads context"
