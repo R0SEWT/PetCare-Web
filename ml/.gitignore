@@ -1,6 +1,0 @@
-_raw/
-prepared/
-runs/
-*.pt
-.venv/
-__pycache__/
