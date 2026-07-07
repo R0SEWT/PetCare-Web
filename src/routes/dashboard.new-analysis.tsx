@@ -111,6 +111,7 @@ function NewAnalysis() {
             ? crypto.randomUUID()
             : `${Date.now()}_${Math.random().toString(16).slice(2)}`
         }`,
+      });
       if (timerRef.current) window.clearInterval(timerRef.current);
       setProgress(100);
       setResult(response);
