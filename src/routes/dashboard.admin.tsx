@@ -1,13 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { adminUsers, modelMetrics } from "@/lib/mock-data";
+import { readStoredTriages, type StoredTriage } from "@/lib/triage-records";
 import { Search, ShieldCheck, Users, Activity, PawPrint } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export const Route = createFileRoute("/dashboard/admin")({ component: AdminPage });
 
 function AdminPage() {
   const [query, setQuery] = useState("");
   const [role, setRole] = useState<string | null>(null);
+  const [captureQueue, setCaptureQueue] = useState<StoredTriage[]>([]);
+
+  useEffect(() => {
+    setCaptureQueue(readStoredTriages());
+  }, []);
 
   const filtered = useMemo(
     () =>
@@ -35,7 +41,9 @@ function AdminPage() {
         </span>
       </div>
       <h1 className="text-3xl font-extrabold mb-1">Panel de Administración</h1>
-      <p className="text-muted-foreground mb-6">Gestiona usuarios y supervisa la plataforma PetCare.</p>
+      <p className="text-muted-foreground mb-6">
+        Gestiona usuarios y supervisa la plataforma PetCare.
+      </p>
 
       <div className="grid sm:grid-cols-3 gap-4 mb-6">
         {[
@@ -48,7 +56,9 @@ function AdminPage() {
               <c.icon className="w-5 h-5" />
             </div>
             <div>
-              <div className="text-xs text-muted-foreground font-bold uppercase tracking-wider">{c.label}</div>
+              <div className="text-xs text-muted-foreground font-bold uppercase tracking-wider">
+                {c.label}
+              </div>
               <div className="text-2xl font-extrabold">{c.value}</div>
             </div>
           </div>
@@ -56,7 +66,9 @@ function AdminPage() {
       </div>
 
       <div className="bg-card border rounded-3xl p-5 mb-6">
-        <div className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground mb-3">Estado del modelo</div>
+        <div className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground mb-3">
+          Estado del modelo
+        </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
           {[
             { l: "Versión", v: modelMetrics.version },
@@ -65,8 +77,69 @@ function AdminPage() {
             { l: "FN Rate", v: `${modelMetrics.falseNegativeRate}%` },
           ].map((m) => (
             <div key={m.l} className="p-3 rounded-2xl bg-muted/50">
-              <div className="text-[10px] uppercase tracking-wider font-extrabold text-muted-foreground">{m.l}</div>
+              <div className="text-[10px] uppercase tracking-wider font-extrabold text-muted-foreground">
+                {m.l}
+              </div>
               <div className="font-extrabold text-brand">{m.v}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-card border rounded-3xl p-5 mb-6">
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <div>
+            <div className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
+              Revisión de capturas
+            </div>
+            <div className="text-sm text-muted-foreground">
+              Casos recientes guardados para curación interna.
+            </div>
+          </div>
+          <div className="text-2xl font-extrabold text-brand">{captureQueue.length}</div>
+        </div>
+        <div className="grid md:grid-cols-3 gap-3">
+          {(captureQueue.length
+            ? captureQueue.slice(0, 3)
+            : [
+                {
+                  id: "queue_demo_1",
+                  pet: "Milo",
+                  condition: "Dermatofitosis",
+                  urgencyLabel: "Seguimiento",
+                  confidence: 82,
+                  date: "Hoy",
+                },
+                {
+                  id: "queue_demo_2",
+                  pet: "Luna",
+                  condition: "Dermatitis Alérgica por Contacto",
+                  urgencyLabel: "Consultar pronto",
+                  confidence: 87,
+                  date: "Hoy",
+                },
+                {
+                  id: "queue_demo_3",
+                  pet: "Rocky",
+                  condition: "Pioderma Bacteriana",
+                  urgencyLabel: "Prioridad alta",
+                  confidence: 91,
+                  date: "Ayer",
+                },
+              ]
+          ).map((item) => (
+            <div key={item.id} className="rounded-2xl bg-muted/45 p-3">
+              <div className="flex items-center justify-between gap-2">
+                <div className="font-bold truncate">{item.pet}</div>
+                <span className="text-[10px] font-extrabold text-muted-foreground">
+                  {item.date}
+                </span>
+              </div>
+              <div className="text-xs text-muted-foreground truncate">{item.condition}</div>
+              <div className="mt-2 flex items-center justify-between text-xs font-bold">
+                <span>{item.urgencyLabel}</span>
+                <span className="text-brand">{item.confidence}%</span>
+              </div>
             </div>
           ))}
         </div>
@@ -106,7 +179,10 @@ function AdminPage() {
         </div>
         <div className="divide-y">
           {filtered.map((u) => (
-            <div key={u.id} className="md:grid md:grid-cols-[1.5fr_1fr_80px_80px_120px_100px] gap-4 px-5 py-4 items-center hover:bg-muted/30 transition">
+            <div
+              key={u.id}
+              className="md:grid md:grid-cols-[1.5fr_1fr_80px_80px_120px_100px] gap-4 px-5 py-4 items-center hover:bg-muted/30 transition"
+            >
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-full bg-gradient-to-br from-brand to-teal grid place-items-center text-white font-bold text-sm">
                   {u.name[0]}
@@ -123,16 +199,22 @@ function AdminPage() {
               <div className="text-center mt-2 md:mt-0">
                 <span
                   className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${
-                    u.status === "Activo" ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"
+                    u.status === "Activo"
+                      ? "bg-green-100 text-green-700"
+                      : "bg-muted text-muted-foreground"
                   }`}
                 >
-                  <span className={`w-1.5 h-1.5 rounded-full ${u.status === "Activo" ? "bg-green-500" : "bg-muted-foreground"}`} />
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${u.status === "Activo" ? "bg-green-500" : "bg-muted-foreground"}`}
+                  />
                   {u.status}
                 </span>
               </div>
             </div>
           ))}
-          {filtered.length === 0 && <div className="p-8 text-center text-sm text-muted-foreground">Sin resultados.</div>}
+          {filtered.length === 0 && (
+            <div className="p-8 text-center text-sm text-muted-foreground">Sin resultados.</div>
+          )}
         </div>
       </div>
     </div>
