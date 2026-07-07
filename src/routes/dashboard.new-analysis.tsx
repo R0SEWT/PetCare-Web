@@ -106,8 +106,11 @@ function NewAnalysis() {
         bodyRegion,
         consentForModelImprovement,
         breed: pet.breed,
-        clientRequestId: `web_${crypto.randomUUID()}`,
-      });
+        clientRequestId: `web_${
+          typeof crypto !== "undefined" && "randomUUID" in crypto
+            ? crypto.randomUUID()
+            : `${Date.now()}_${Math.random().toString(16).slice(2)}`
+        }`,
       if (timerRef.current) window.clearInterval(timerRef.current);
       setProgress(100);
       setResult(response);
