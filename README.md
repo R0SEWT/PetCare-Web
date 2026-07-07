@@ -1,6 +1,6 @@
 # PetCare Web
 
-Frontend de PetCare. La pantalla de nuevo analisis consume el servicio
+Frontend de PetCare. La pantalla de nuevo análisis consume el servicio
 `petcare-triage-service` mediante el contrato de triage ML.
 
 ## Quick start
@@ -12,12 +12,12 @@ npm run dev
 ```
 
 Por defecto `.env.example` apunta al mock local en `http://127.0.0.1:8000`.
-Para un entorno desplegado, configurar `VITE_TRIAGE_API_URL` con la URL publica
+Para un entorno desplegado, configurar `VITE_TRIAGE_API_URL` con la URL pública
 del backend.
 
 ## Triage ML
 
-- Guia de despliegue y consumo: [`docs/triage-deploy-guide.md`](docs/triage-deploy-guide.md)
+- Guía de despliegue y consumo: [`docs/triage-deploy-guide.md`](docs/triage-deploy-guide.md)
 - Endpoint esperado: `POST /api/triage/analyze`
 - Health check esperado: `GET /health`
 

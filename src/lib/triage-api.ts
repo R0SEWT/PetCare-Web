@@ -74,6 +74,49 @@ export class TriageApiError extends Error {
   }
 }
 
+const GENERIC_ANALYSIS_ERROR = "No pudimos completar el análisis. Inténtalo nuevamente.";
+const INVALID_RESPONSE_ERROR = "Respuesta inválida del servicio de triaje.";
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function isTriageErrorResponse(payload: unknown): payload is TriageErrorResponse {
+  if (!isRecord(payload) || !isRecord(payload.error)) return false;
+  return (
+    typeof payload.error.code === "string" &&
+    typeof payload.error.message === "string" &&
+    typeof payload.error.retryable === "boolean"
+  );
+}
+
+function isTriageResponse(payload: unknown): payload is TriageResponse {
+  return (
+    isRecord(payload) &&
+    typeof payload.triageId === "string" &&
+    payload.status === "completed" &&
+    typeof payload.resultState === "string" &&
+    isRecord(payload.model) &&
+    typeof payload.latencyMs === "number" &&
+    isRecord(payload.imageQuality) &&
+    isRecord(payload.ood) &&
+    Array.isArray(payload.recommendations) &&
+    isRecord(payload.safety)
+  );
+}
+
+async function readJsonPayload(response: Response): Promise<unknown | null> {
+  try {
+    return await response.json();
+  } catch {
+    return null;
+  }
+}
+
+function isAbortError(error: unknown) {
+  return isRecord(error) && error.name === "AbortError";
+}
+
 export function speciesToApi(species: string): "dog" | "cat" {
   return species.toLowerCase().startsWith("g") ? "cat" : "dog";
 }
@@ -128,11 +171,22 @@ export async function analyzeTriage(input: AnalyzeTriageInput): Promise<TriageRe
       body: form,
       signal: controller.signal,
     });
-    const payload = await response.json();
+    const payload = await readJsonPayload(response);
     if (!response.ok) {
-      throw new TriageApiError(response.status, payload as TriageErrorResponse);
+      if (isTriageErrorResponse(payload)) {
+        throw new TriageApiError(response.status, payload);
+      }
+      throw new Error(GENERIC_ANALYSIS_ERROR);
     }
-    return payload as TriageResponse;
+    if (!isTriageResponse(payload)) {
+      throw new Error(INVALID_RESPONSE_ERROR);
+    }
+    return payload;
+  } catch (error) {
+    if (isAbortError(error)) {
+      throw new Error("Tiempo de espera agotado. Inténtalo nuevamente.");
+    }
+    throw error;
   } finally {
     window.clearTimeout(timeout);
   }

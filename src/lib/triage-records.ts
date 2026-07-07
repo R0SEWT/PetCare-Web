@@ -19,12 +19,25 @@ export type StoredTriage = {
 };
 
 function storageAvailable() {
-  return typeof window !== "undefined" && Boolean(window.localStorage);
+  if (typeof window === "undefined") return false;
+  try {
+    const testKey = "__petcare_storage_test__";
+    window.localStorage.setItem(testKey, "1");
+    window.localStorage.removeItem(testKey);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function readStoredTriages(): StoredTriage[] {
   if (!storageAvailable()) return [];
-  const raw = window.localStorage.getItem(STORAGE_KEY);
+  let raw: string | null = null;
+  try {
+    raw = window.localStorage.getItem(STORAGE_KEY);
+  } catch {
+    return [];
+  }
   if (!raw) return [];
   try {
     const parsed = JSON.parse(raw);
@@ -37,7 +50,11 @@ export function readStoredTriages(): StoredTriage[] {
 export function writeStoredTriage(record: StoredTriage) {
   if (!storageAvailable()) return;
   const current = readStoredTriages().filter((item) => item.id !== record.id);
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify([record, ...current].slice(0, 40)));
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify([record, ...current].slice(0, 40)));
+  } catch {
+    // Best effort only: disabled storage or quota issues should not break analysis.
+  }
 }
 
 export function storedTriageFromResponse({

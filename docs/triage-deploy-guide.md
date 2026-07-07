@@ -1,7 +1,7 @@
-# Guia simple: desplegar y consumir triage ML
+# Guía simple: desplegar y consumir triage ML
 
-Esta guia deja el flujo minimo para que PetCare Web consuma
-`petcare-triage-service` desde local o desde un host publico.
+Esta guía deja el flujo mínimo para que PetCare Web consuma
+`petcare-triage-service` desde local o desde un host público.
 
 ## Resumen
 
@@ -9,9 +9,9 @@ Esta guia deja el flujo minimo para que PetCare Web consuma
 - Frontend: `PetCare-Web`, variable `VITE_TRIAGE_API_URL`.
 - Endpoint principal: `POST /api/triage/analyze`.
 - Health check: `GET /health`.
-- Formatos de imagen: JPEG o PNG, maximo 5 MB.
+- Formatos de imagen: JPEG o PNG, máximo 5 MB.
 - Captura para mejora de modelo: se activa solo cuando el usuario marca
-  consentimiento en la pantalla de analisis.
+  consentimiento en la pantalla de análisis.
 
 ## Local
 
@@ -40,7 +40,7 @@ Abrir `http://127.0.0.1:5173/dashboard/new-analysis`.
 
 Crear un servicio web apuntando al repo `petcare-triage-service`.
 
-Configuracion recomendada:
+Configuración recomendada:
 
 - Root directory: `services/triage-mock`
 - Build command: `pip install -r requirements.txt`
@@ -54,7 +54,7 @@ PETCARE_CAPTURE_ENABLED=true
 PETCARE_CAPTURE_BUFFER_DIR=/data/triage-captures
 ```
 
-Para la demo, el mock permite CORS amplio. En produccion, acotar CORS al dominio
+Para la demo, el mock permite CORS amplio. En producción, acotar CORS al dominio
 del frontend cuando se congele el host final.
 
 ## Frontend en cloud
@@ -87,7 +87,7 @@ Backend:
 curl -s https://<backend-host>/health
 ```
 
-Analisis:
+Análisis:
 
 ```bash
 curl -s -X POST https://<backend-host>/api/triage/analyze \
@@ -103,9 +103,9 @@ Frontend:
 1. Abrir `/dashboard/new-analysis`.
 2. Subir una imagen JPEG o PNG.
 3. Seleccionar especie y zona corporal.
-4. Ejecutar analisis.
-5. Verificar que se muestra resultado, urgencia y recomendacion.
-6. Si se marco consentimiento, revisar la cola en `/dashboard/admin`.
+4. Ejecutar análisis.
+5. Verificar que se muestra resultado, urgencia y recomendación.
+6. Si se marcó consentimiento, revisar la cola en `/dashboard/admin`.
 
 ## Checks para PR
 
@@ -118,4 +118,4 @@ npx eslint src/lib/triage-api.ts src/lib/triage-records.ts \
 ```
 
 Nota: el lint completo del repo puede reportar deuda previa fuera de esta
-integracion. El build debe pasar.
+integración. El build debe pasar.
