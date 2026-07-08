@@ -1,21 +1,34 @@
-# Guía simple: desplegar y consumir triage ML
+# Guía de Despliegue: Triage ML
 
-Esta guía deja el flujo mínimo para que PetCare Web consuma
-`petcare-triage-service` desde local o desde un host público.
+Esta guía cubre el camino mínimo para desplegar `petcare-triage-service` y
+conectarlo con `PetCare-Web`.
 
-## Resumen
+## Resumen Operativo
 
-- Backend: `petcare-triage-service`, servicio FastAPI en `services/triage-mock`.
-- Frontend: `PetCare-Web`, variable `VITE_TRIAGE_API_URL`.
-- Endpoint principal: `POST /api/triage/analyze`.
-- Health check: `GET /health`.
-- Formatos de imagen: JPEG o PNG, máximo 5 MB.
-- Captura para mejora de modelo: se activa solo cuando el usuario marca
-  consentimiento en la pantalla de análisis.
+| Pieza             | Valor                                                        |
+| ----------------- | ------------------------------------------------------------ |
+| Backend           | `petcare-triage-service/services/triage-mock`                |
+| Frontend          | `PetCare-Web`                                                |
+| Variable frontend | `VITE_TRIAGE_API_URL`                                        |
+| Endpoint          | `POST /api/triage/analyze`                                   |
+| Health check      | `GET /health`                                                |
+| Imágenes          | JPEG o PNG, máximo 5 MB                                      |
+| Captura ML        | Solo con consentimiento explícito en la pantalla de análisis |
 
-## Local
+## Flujo
 
-Levantar backend:
+```text
+Usuario sube imagen
+  -> PetCare-Web arma FormData
+  -> POST /api/triage/analyze
+  -> Backend devuelve contract v0.1
+  -> UI muestra resultado, urgencia y recomendaciones
+  -> Si hay consentimiento, backend guarda captura para mejora del modelo
+```
+
+## 1. Demo Local
+
+### Backend
 
 ```bash
 cd ../petcare-triage-service/services/triage-mock
@@ -25,7 +38,13 @@ uv pip install -r requirements.txt
 uvicorn app:app --host 127.0.0.1 --port 8000
 ```
 
-Levantar frontend:
+Validar:
+
+```bash
+curl -s http://127.0.0.1:8000/health
+```
+
+### Frontend
 
 ```bash
 cd ../PetCare-Web
@@ -34,18 +53,24 @@ npm install
 npm run dev
 ```
 
-Abrir `http://127.0.0.1:5173/dashboard/new-analysis`.
+Abrir:
 
-## Backend en cloud
+```text
+http://127.0.0.1:5173/dashboard/new-analysis
+```
+
+## 2. Backend en Cloud
 
 Crear un servicio web apuntando al repo `petcare-triage-service`.
 
 Configuración recomendada:
 
-- Root directory: `services/triage-mock`
-- Build command: `pip install -r requirements.txt`
-- Start command: `uvicorn app:app --host 0.0.0.0 --port $PORT`
-- Health check path: `/health`
+| Campo             | Valor                                         |
+| ----------------- | --------------------------------------------- |
+| Root directory    | `services/triage-mock`                        |
+| Build command     | `pip install -r requirements.txt`             |
+| Start command     | `uvicorn app:app --host 0.0.0.0 --port $PORT` |
+| Health check path | `/health`                                     |
 
 Variables opcionales:
 
@@ -54,10 +79,10 @@ PETCARE_CAPTURE_ENABLED=true
 PETCARE_CAPTURE_BUFFER_DIR=/data/triage-captures
 ```
 
-Para la demo, el mock permite CORS amplio. En producción, acotar CORS al dominio
-del frontend cuando se congele el host final.
+Para demo, el mock permite CORS amplio. En producción, acotar CORS al dominio
+del frontend cuando el host final esté definido.
 
-## Frontend en cloud
+## 3. Frontend en Cloud
 
 Configurar en el proveedor del frontend:
 
@@ -65,21 +90,21 @@ Configurar en el proveedor del frontend:
 VITE_TRIAGE_API_URL=https://<backend-host>
 ```
 
-Build:
+Build con npm:
 
 ```bash
 npm install
 npm run build
 ```
 
-Si el proveedor usa Bun:
+Build con Bun, si el proveedor lo usa:
 
 ```bash
 bun install
 bun run build
 ```
 
-## Smoke test
+## 4. Smoke Tests
 
 Backend:
 
@@ -104,10 +129,10 @@ Frontend:
 2. Subir una imagen JPEG o PNG.
 3. Seleccionar especie y zona corporal.
 4. Ejecutar análisis.
-5. Verificar que se muestra resultado, urgencia y recomendación.
+5. Confirmar que se muestra resultado, urgencia y recomendación.
 6. Si se marcó consentimiento, revisar la cola en `/dashboard/admin`.
 
-## Checks para PR
+## 5. Checklist para PR
 
 ```bash
 npm run build
@@ -117,5 +142,10 @@ npx eslint src/lib/triage-api.ts src/lib/triage-records.ts \
   src/routes/dashboard.admin.tsx
 ```
 
-Nota: el lint completo del repo puede reportar deuda previa fuera de esta
-integración. El build debe pasar.
+Notas:
+
+- El build debe pasar.
+- El lint completo del repo puede reportar deuda previa fuera de esta
+  integración.
+- La captura para mejora de modelo es best-effort; el análisis no debe fallar si
+  la captura no se puede guardar.
